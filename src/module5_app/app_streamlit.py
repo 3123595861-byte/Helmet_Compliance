@@ -133,7 +133,11 @@ def get_camera(index: int) -> ThreadedCamera | None:
         return None
 
 @st.cache_resource
-def get_model() -> YOLO:
+def get_model():
+    # 懒加载：只有在真正需要加载模型时，才去导入这些重型库
+    import logging
+    from ultralytics import YOLO
+    
     logging.getLogger("ultralytics").setLevel(logging.ERROR)
     try:
         from ultralytics.utils import LOGGER
@@ -385,7 +389,8 @@ def render_monitor(cfg: dict[str, object], logger: ViolationLogger) -> None:
         )
 
         if results:
-            table_placeholder.dataframe(pd.DataFrame([r.__dict__ for r in results]), use_container_width=True)
+            recent_results = results[-5:] # 切片，只拿最后5个
+            table_placeholder.dataframe(pd.DataFrame([r.__dict__ for r in recent_results]), use_container_width=True)
         else:
             table_placeholder.empty()
 
