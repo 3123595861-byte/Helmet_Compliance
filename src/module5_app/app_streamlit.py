@@ -125,8 +125,12 @@ def get_logger() -> ViolationLogger:
     return ViolationLogger(output_dir=OUTPUT_DIR, violation_dir=VIOLATION_DIR, log_dir=LOG_DIR)
 
 @st.cache_resource
-def get_camera(index: int) -> ThreadedCamera:
-    return ThreadedCamera(index).start()
+def get_camera(index: int) -> ThreadedCamera | None:
+    try:
+        return ThreadedCamera(index).start()
+    except RuntimeError:
+        # 当云端找不到摄像头报错时，捕获错误并返回 None
+        return None
 
 @st.cache_resource
 def get_model() -> YOLO:
@@ -313,7 +317,27 @@ def render_monitor(cfg: dict[str, object], logger: ViolationLogger) -> None:
         unsafe_allow_html=True,
     )
 
+
     camera = get_camera(int(cfg["cam"]))
+
+    if camera is None:
+        st.warning("### 🚧 边缘架构与云端环境限制说明", icon="☁️")
+        st.markdown(
+            """
+            本项目核心设计为 **边缘计算 (Edge-Native)** 架构。为保障极低延迟与数据隐私，YOLOv8 实时推理与告警状态机被设计为在本地工控机（边缘端）闭环运行。
+            
+            受限于云端服务器的物理隔离与现代浏览器安全策略，当前部署的云端版本无法跨网络调度您的本地摄像头。**因此，当前网页端仅开放上方的【图片快速检测】功能演示。**
+            
+            欲完整体验本系统的「多线程画面异步采集」、「局部页面渲染降耗优化」及「连续违规告警状态机」等核心特性，强烈建议在本地环境运行源码：
+            """
+        )
+        st.link_button(
+            "👉 前往 GitHub 获取完整源码与部署文档", 
+            "https://github.com/3123595861-byte/Helmet_Compliance", 
+            type="primary",
+            use_container_width=True
+        )
+        return  # 直接退出函数，不再向下执行容易崩溃的监控死循环
 
     while True:
         ok, frame, frame_index = camera.read()
