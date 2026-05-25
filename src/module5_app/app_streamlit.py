@@ -13,7 +13,12 @@ os.environ["OPENCV_LOG_LEVEL"] = "SILENT"
 os.environ["OPENCV_VIDEOIO_DEBUG"] = "0"
 
 import cv2
-cv2.setLogLevel(0)
+
+try:
+    #一般为本地开发时使用
+    cv2.setLogLevel(0)
+except AttributeError:
+    pass # 如果没有这个方法，就直接跳过，不报错
 
 import numpy as np
 import pandas as pd
