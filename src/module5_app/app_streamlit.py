@@ -23,7 +23,6 @@ except AttributeError:
 import numpy as np
 import pandas as pd
 import streamlit as st
-from ultralytics import YOLO
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SRC_DIR = PROJECT_ROOT / "src"
@@ -137,7 +136,7 @@ def get_model():
     # 懒加载：只有在真正需要加载模型时，才去导入这些重型库
     import logging
     from ultralytics import YOLO
-    
+
     logging.getLogger("ultralytics").setLevel(logging.ERROR)
     try:
         from ultralytics.utils import LOGGER
